@@ -1,0 +1,6 @@
+[submodule "third_party/FreeRTOS"]
+	path = third_party/FreeRTOS
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+[submodule "third_party/lwIP"]
+	path = third_party/lwIP
+	url = https://github.com/lwip-tcpip/lwip.git
