@@ -24,7 +24,7 @@ TaskHandle_t    net_work_task_handler;                   /* Task handle */
 static Net_Device_T *net_dev = NULL;                     /* Ethernet device pointer */
 static unsigned char s_msg[1024*6] = {0};                /* Receive buffer */
 
-void net_work_task_function(void *parameters)
+static void net_work_task_function(void *parameters)
 {
 	parameters = parameters;
 

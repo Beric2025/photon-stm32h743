@@ -5,6 +5,7 @@
 .idea/
 .claude/
 *.code-workspace
+CLAUDE.md
 
 # ============================================
 # OS generated files

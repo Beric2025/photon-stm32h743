@@ -17,6 +17,7 @@
 #include "app_motor.h"
 #include "app_battery.h"
 #include "app_ultrasonic.h"
+#include "app_adc_battery.h"
 
 #define TAG         "app manage: "
 
@@ -48,6 +49,7 @@ static void task_init(void)
     app_light_init();
     app_motor_init();
     app_battery_init();
+    app_adc_battery_init();
     app_ultrasonic_init();
     taskEXIT_CRITICAL();
 }

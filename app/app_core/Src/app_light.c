@@ -60,7 +60,7 @@ static void queue_create_function(void)
 }
 
 /* Light work task — receives color commands via queue and applies them */
-void light_work_task_function(void *pvParameters)
+static void light_work_task_function(void *pvParameters)
 {
     pvParameters = pvParameters;
 
@@ -98,7 +98,7 @@ void light_work_task_function(void *pvParameters)
 }
 
 /* Breathe light task — alternates between color and off */
-void breathe_light_work_task_function(void *pvParameters)
+static void breathe_light_work_task_function(void *pvParameters)
 {
     pvParameters = pvParameters;
 

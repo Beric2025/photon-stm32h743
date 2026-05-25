@@ -12,6 +12,7 @@ target_include_directories(interface PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/SPI
     ${CMAKE_CURRENT_SOURCE_DIR}/ETHERNET
     ${CMAKE_CURRENT_SOURCE_DIR}/DELAY
+    ${CMAKE_CURRENT_SOURCE_DIR}/ADC
     # TODO: cross-module references — these belong in the modules that own them
     ${CMAKE_SOURCE_DIR}/drivers/pcf8574
     ${CMAKE_SOURCE_DIR}/drivers/eth_phy

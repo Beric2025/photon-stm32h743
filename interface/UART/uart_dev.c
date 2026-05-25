@@ -37,6 +37,7 @@ static uint8_t s_uart7_rx_buffer[UART7_RX_BUF_SIZE];
 typedef struct {
 	UART_HandleTypeDef *uart;
 	void (*init)(unsigned int baudrate);
+	uint8_t dma_on;
 	uint8_t tx_flag;
 	uint8_t *dma_buffer;
 	uint16_t dma_buffer_size;
@@ -54,14 +55,17 @@ static int uart_ioctl(void *privatedata, unsigned int flag);
 static Uart_Data_T s_uart1_data = {
 	.uart = &g_uart1,
 	.init = bsp_uart1_init,
+	.dma_on = 0
 };
 static Uart_Data_T s_uart4_data = {
 	.uart = &g_uart4,
 	.init = bsp_uart4_init,
+	.dma_on = 0
 };
 static Uart_Data_T s_uart7_data = {
 	.uart = &g_uart7,
 	.init = bsp_uart7_init,
+	.dma_on = 1,
 	.dma_buffer = s_uart7_dma_rx_buffer,
 	.dma_buffer_size = UART7_RX_BUF_SIZE,
 	.rx_buffer = s_uart7_rx_buffer,
@@ -110,7 +114,7 @@ static int uart_init(void *privatedata, unsigned int baudrate)
 
 	uart_data->init(baudrate);
 
-	if((0 != strcmp(uart_dev->name, "uart1")) && (0 != strcmp(uart_dev->name, "uart4"))) {
+	if(uart_data->dma_on) {
 		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
 	}
 
@@ -129,19 +133,20 @@ static int uart_send(void *privatedata, char *buff, unsigned short length)
 	Uart_Device_T *uart_dev = (Uart_Device_T *)privatedata;
 	Uart_Data_T *uart_data = (Uart_Data_T *)uart_dev->private_data;
 
-	if(0 == strcmp(uart_dev->name, "uart1") || 0 == strcmp(uart_dev->name, "uart4")) {
-		LOG_PRINT(LOG_OUT_DEBUG, "%s UART send successful!\n", TAG);
-		return HAL_UART_Transmit(uart_data->uart, (uint8_t *)buff, length, 1000);
-	}
-	else {
+	if(uart_data->dma_on) {
 		SCB_CleanDCache_by_Addr((unsigned int *)buff, UART_DMA_ALIGN_SIZE(length));
 		HAL_UART_Transmit_DMA(uart_data->uart, (uint8_t *)buff, length);
 		while(__HAL_UART_GET_FLAG(uart_data->uart,UART_FLAG_TC) == RESET) {}
 
 		LOG_PRINT(LOG_OUT_DEBUG, "%s UART send successful!\n", TAG);
-
-		return 0;
 	}
+	else {
+		LOG_PRINT(LOG_OUT_DEBUG, "%s UART send successful!\n", TAG);
+		return HAL_UART_Transmit(uart_data->uart, (uint8_t *)buff, length, 1000);
+	}
+
+	return 0;
+	
 }
 
 static unsigned short uart_receive(void *privatedata, char *buff, unsigned short size)
@@ -211,7 +216,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 		uart_data = &s_uart1_data;
 	}
 
-	if(uart_data) {
+	if(uart_data->dma_on) {
 		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
 	}
 }
@@ -225,7 +230,7 @@ void HAL_UART_TxHalfCpltCallback(UART_HandleTypeDef *huart)
 		uart_data = &s_uart1_data;
 	}
 
-	if(uart_data) {
+	if(uart_data->dma_on) {
 		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
 	}
 }
@@ -267,8 +272,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 		if((uart_data->rx_length + Size) > uart_data->dma_buffer_size)
 			uart_data->rx_length = 0;
 
-		/* Invalidate cache before copying to ensure latest data */
-		SCB_InvalidateDCache_by_Addr((unsigned int*)uart_data->dma_buffer, UART_DMA_ALIGN_SIZE(Size));
+		if(uart_data->dma_on) {
+			/* Invalidate cache before copying to ensure latest data */
+			SCB_InvalidateDCache_by_Addr((unsigned int*)uart_data->dma_buffer, UART_DMA_ALIGN_SIZE(Size));
+		}
 
 		memcpy(uart_data->rx_buffer, uart_data->dma_buffer, Size);
 		uart_data->rx_length += Size;
@@ -277,8 +284,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 #ifdef USE_OS
 		taskEXIT_CRITICAL_FROM_ISR(task_retval);
 #endif
-		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
-
+		if(uart_data->dma_on) {
+			HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
+		}
 	}
 }
 

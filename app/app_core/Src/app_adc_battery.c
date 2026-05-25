@@ -9,21 +9,21 @@
 #include <string.h>
 #include "main.h"
 #include "app_manage.h"
-#include "app_battery.h"
+#include "app_adc_battery.h"
 #include "match_mode.h"
 #include "battery_dev.h"
 
-#define TAG         "app battery:"
+#define TAG         "app adc battery:"
 
 
 /* Task creation definitions
  * Task stack size: 512*4 Bytes
  * Task priority: 3
- * @TaskHandle_t battery_work_task_handler
+ * @TaskHandle_t adc_battery_work_task_handler
  */
 #define         BATTERY_WORK_STK_SIZE              512
 #define         BATTERY_WORK_TASK_PRIO             3
-TaskHandle_t    battery_work_task_handler;
+TaskHandle_t    adc_battery_work_task_handler;
 
 static Battery_Device_T *batarry_dev = NULL;
 static Battery_Info_T s_battery_status = {0};
@@ -75,18 +75,18 @@ static void task_create_function(void)
                 (uint16_t       ) BATTERY_WORK_STK_SIZE,
                 (void*          ) NULL,
                 (UBaseType_t    ) BATTERY_WORK_TASK_PRIO,
-                (TaskHandle_t*  ) &battery_work_task_handler);
+                (TaskHandle_t*  ) &adc_battery_work_task_handler);
 }
 
-void app_battery_init(void)
+void app_adc_battery_init(void)
 {
-    batarry_dev = get_battery_device("xingneng");
+    batarry_dev = get_battery_device("adc_battery");
     if(!batarry_dev) {
-        LOG_PRINT(LOG_OUT_ERROR, "%s Can not find xingneng!\n", TAG);
+        LOG_PRINT(LOG_OUT_ERROR, "%s Can not find adc_battery!\n", TAG);
         return;
     }
     if(batarry_dev->init(batarry_dev)){
-        LOG_PRINT(LOG_OUT_ERROR, "%sxingneng init error!\n",TAG);
+        LOG_PRINT(LOG_OUT_ERROR, "%s adc_battery init error!\n",TAG);
         return;
     }
 
