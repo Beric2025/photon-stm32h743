@@ -12,20 +12,26 @@
 
 
 typedef struct {
-    /* ADC device identifier (e.g. "adc1") */
-    char *name;
+    /* device identifier (e.g. "adc1") */
+    char *name;  
+    
+    /* ADC resolution in bits (8/10/12/16) */
+    unsigned char resolution;   
+
+    /* number of channels on this device */
+    unsigned char channel_count; 
 
     /**
-     * @brief:  initialize ADC
-     * @privatedata:  ADC handle (Adc_Device_T *)
+     * @brief:  initialize ADC hardware
+     * @privatedata:  pointer to this Adc_Device_T
      *
      * Return: 0 on success, -1 on failure
      */
     int (*init)(void *privatedata);
 
     /**
-     * @brief:  start ADC conversion
-     * @privatedata:  ADC handle (Adc_Device_T *)
+     * @brief:  start ADC conversion (DMA or polling)
+     * @privatedata:  pointer to this Adc_Device_T
      *
      * Return: 0 on success, -1 on failure
      */
@@ -33,21 +39,21 @@ typedef struct {
 
     /**
      * @brief:  stop ADC conversion
-     * @privatedata:  ADC handle (Adc_Device_T *)
+     * @privatedata:  pointer to this Adc_Device_T
      *
      * Return: 0 on success, -1 on failure
      */
     int (*stop)(void *privatedata);
 
     /**
-     * @brief:  get ADC raw buff for a channel
-     * @privatedata:  ADC handle (Adc_Device_T *)
-     * @num:          channel index
-     * @buff:        buffer for raw ADC buff
+     * @brief:  read raw ADC value for a channel
+     * @privatedata:  pointer to this Adc_Device_T
+     * @channel:      channel index (0 to channel_count-1)
+     * @value:        output buffer for raw ADC value
      *
-     * Return: raw ADC buff (averaged from ring buffer), 0 on failure
+     * Return: 0 on success, -1 on failure
      */
-    int (*get_raw_buff)(void *privatedata, unsigned char num, unsigned short *buff);
+    int (*read_raw)(void *privatedata, unsigned char channel, unsigned short *value);
 
     void *private_data;
 } Adc_Device_T;

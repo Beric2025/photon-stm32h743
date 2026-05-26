@@ -135,7 +135,7 @@ static int battery_read_voltage(void *privatedata, unsigned short *voltage)
     }
 
     /* read raw ADC buffer */
-    if (battery_data->adc->get_raw_buff(battery_data->adc, 0, &data) != 0) {
+    if (battery_data->adc->read_raw(battery_data->adc, 0, &data) != 0) {
         LOG_PRINT(LOG_OUT_ERROR, "%sFailed to read battery voltage!\n", TAG);
         return -1;
     }

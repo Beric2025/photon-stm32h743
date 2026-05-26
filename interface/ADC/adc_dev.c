@@ -48,7 +48,7 @@ typedef struct {
 static int adc_init(void *privatedata);
 static int adc_start(void *privatedata);
 static int adc_stop(void *privatedata);
-static int adc_get_raw_buff(void *privatedata, unsigned char num, unsigned short *buff);
+static int adc_read_raw(void *privatedata, unsigned char channel, unsigned short *value);
 
 
 
@@ -67,10 +67,12 @@ static Adc_Data_T s_adc1_data = {
 /* ADC device instance */
 static Adc_Device_T s_adc1_dev = {
     .name = "adc1",
+    .resolution = 16,
+    .channel_count = ADC1_CHANNEL_NUM,
     .init = adc_init,
     .start = adc_start,
     .stop = adc_stop,
-    .get_raw_buff = adc_get_raw_buff,
+    .read_raw = adc_read_raw,
     .private_data = &s_adc1_data
 };
 
@@ -142,40 +144,41 @@ static int adc_stop(void *privatedata)
     return 0;
 }
 
-static int adc_get_raw_buff(void *privatedata, unsigned char num, unsigned short *buff)
+static int adc_read_raw(void *privatedata, unsigned char channel, unsigned short *value)
 {
-    if (privatedata == NULL) {
-        LOG_PRINT(LOG_OUT_ERROR, "%s ADC get raw buff private data is null!\n", TAG);
+    if (privatedata == NULL || value == NULL) {
+        LOG_PRINT(LOG_OUT_ERROR, "%s ADC read raw private data is null!\n", TAG);
         return -1;
     }
 
     Adc_Device_T *adev = (Adc_Device_T *)privatedata;
     Adc_Data_T *pdata = (Adc_Data_T *)adev->private_data;
-    unsigned short i = 0, j = 0;
-    unsigned short value[ADC1_CHANNEL_NUM] = {0};
+    unsigned char ch;
+    unsigned short avg[ADC1_CHANNEL_NUM] = {0};
 #ifdef USE_OS
     taskENTER_CRITICAL();
 #endif
     if (pdata->ring_buf_size) {
-        for (i = 0; i < ADC1_CHANNEL_NUM; i++) {
-            value[i] += pdata->ring_buf[i];
+        for (ch = 0; ch < ADC1_CHANNEL_NUM; ch++) {
+            avg[ch] += pdata->ring_buf[ch];
         }
+        unsigned char i, j;
         for (j = 0; j < ADC1_CHANNEL_NUM; j++) {
             for (i = 1; i < pdata->ring_buf_size / ADC1_CHANNEL_NUM; i++) {
-                value[j] += pdata->ring_buf[ADC1_CHANNEL_NUM * i + j];
-                value[j] /= 2;
+                avg[j] += pdata->ring_buf[ADC1_CHANNEL_NUM * i + j];
+                avg[j] /= 2;
             }
         }
     }
 #ifdef USE_OS
     taskEXIT_CRITICAL();
 #endif
-    if (num >= ADC1_CHANNEL_NUM) {
-        LOG_PRINT(LOG_OUT_ERROR, "%s ADC get raw buff channel num %d out of range!\n", TAG, num);
+    if (channel >= ADC1_CHANNEL_NUM) {
+        LOG_PRINT(LOG_OUT_ERROR, "%s ADC channel %d out of range!\n", TAG, channel);
         return -1;
     }
 
-    *buff = value[num];
+    *value = avg[channel];
 
     return 0;
 }
