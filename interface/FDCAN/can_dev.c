@@ -12,8 +12,6 @@
 #include "bsp_fdcan.h"
 #include "log_print.h"
 
-#define USE_OS
-
 #ifdef USE_OS
 #include "FreeRTOS.h"
 #include "task.h"

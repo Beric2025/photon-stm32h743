@@ -23,6 +23,7 @@ set(STM32_MCU    "stm32h743"     CACHE STRING "Target MCU family (stm32h743, stm
 set(STM32_DEVICE "STM32H743xx"   CACHE STRING "MCU device define (e.g., STM32H743xx)")
 set(STM32_CHIP   "STM32H743IITx" CACHE STRING "MCU chip model for linker script selection")
 set(USE_PWR_LDO_SUPPLY ON CACHE BOOL "Use LDO power supply (disable for SMPS)")
+option(BUILD_DRIVERS "Build drivers and application layers" ON)
 
 # Derive CMSIS device family from MCU name prefix: stm32h743 -> STM32H7xx
 string(SUBSTRING "${STM32_MCU}" 5 1 _MCU_LETTER)
@@ -89,8 +90,10 @@ add_subdirectory(third_party/lwIP)
 target_link_libraries(lwipcore PUBLIC lwip_config)
 
 add_subdirectory(interface)
-add_subdirectory(drivers)
-add_subdirectory(app)
+if(BUILD_DRIVERS)
+    add_subdirectory(drivers)
+    add_subdirectory(app)
+endif()
 add_subdirectory(port)
 
 # ============================================================
@@ -110,16 +113,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".elf")
 # (lwipcore calls sys_arch_* from port/lwip/arch/sys_arch.c,
 #  port/lwip/arch/ethernetif.c calls lwIP stack APIs from lwipcore).
 # This is inherent to lwIP's OS-port architecture — not a build bug.
+set(EXE_LINK_LIBS interface port freertos_kernel hal lwipcore)
+if(BUILD_DRIVERS)
+    list(APPEND EXE_LINK_LIBS drivers app)
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     project_config
     -Wl,--start-group
-    app
-    drivers
-    interface
-    port
-    freertos_kernel
-    hal
-    lwipcore
+    ${EXE_LINK_LIBS}
     -Wl,--end-group
 )
 

@@ -6,6 +6,8 @@
 #ifndef __LOG_PRINT_H__
 #define __LOG_PRINT_H__
 
+#include "project_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,9 +18,6 @@ typedef enum {
     LOG_OUT_WARN,
     LOG_OUT_ERROR
 } Log_Print_Level_E;
-
-#define LOG_PRINT_LEVEL LOG_OUT_DEBUG
-#define LOG_PRINT_ENABLE 1
 
 #if LOG_PRINT_ENABLE
 #define LOG_PRINT(level, fmt, ...) \
