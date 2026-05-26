@@ -12,7 +12,7 @@
 
 /* Injected by CMake at build time; fallback for manual builds (Keil, etc.) */
 #ifndef APP_VERSION
-#define APP_VERSION "v0.0.2-dev"
+#define APP_VERSION "v0.0.3.0-dev"
 #endif
 
 #ifdef APP_DIRTY
