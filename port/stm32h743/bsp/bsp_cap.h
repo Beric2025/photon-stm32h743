@@ -12,6 +12,9 @@ extern "C" {
 
 #include "main.h"
 
+/* APB1 timer clock = 200 MHz (APB1 prescaler = 2, timer clock = 2x PCLK1) */
+#define CAP_TIMER_CLK_HZ  200000000UL
+
 extern TIM_HandleTypeDef g_tim4;
 
 /**

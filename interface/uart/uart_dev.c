@@ -213,8 +213,14 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	if(huart == s_uart1_data.uart) {
 		uart_data = &s_uart1_data;
 	}
+	if(huart == s_uart4_data.uart) {
+		uart_data = &s_uart4_data;
+	}
+	if(huart == s_uart7_data.uart) {
+		uart_data = &s_uart7_data;
+	}
 
-	if(uart_data->dma_on) {
+	if(uart_data && uart_data->dma_on) {
 		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
 	}
 }
@@ -275,7 +281,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 			SCB_InvalidateDCache_by_Addr((unsigned int*)uart_data->dma_buffer, UART_DMA_ALIGN_SIZE(Size));
 		}
 
-		memcpy(uart_data->rx_buffer, uart_data->dma_buffer, Size);
+		memcpy(uart_data->rx_buffer + uart_data->rx_length, uart_data->dma_buffer, Size);
 		uart_data->rx_length += Size;
 
 		memset(uart_data->dma_buffer, 0, uart_data->dma_buffer_size);

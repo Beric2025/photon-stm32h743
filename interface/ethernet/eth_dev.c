@@ -399,6 +399,9 @@ static int eth_ioctl(void *privatedata, unsigned int cmd, void *arg)
 
 static int eth_wait_rx(void *privatedata, unsigned int timeout_ms)
 {
+    if (privatedata == NULL)
+        return -1;
+
     Eth_Device_T *eth_dev = (Eth_Device_T *)privatedata;
     Eth_Data_T *ed = (Eth_Data_T *)eth_dev->private_data;
 
@@ -456,6 +459,9 @@ static int eth_wait_rx(void *privatedata, unsigned int timeout_ms)
 
 static int eth_register_rx_callback(void *privatedata, eth_rx_callback_t cb, void *user_data)
 {
+    if (privatedata == NULL)
+        return -1;
+
     Eth_Device_T *eth_dev = (Eth_Device_T *)privatedata;
     Eth_Data_T *ed = (Eth_Data_T *)eth_dev->private_data;
 
@@ -467,6 +473,9 @@ static int eth_register_rx_callback(void *privatedata, eth_rx_callback_t cb, voi
 
 static int eth_register_link_callback(void *privatedata, eth_link_callback_t cb, void *user_data)
 {
+    if (privatedata == NULL)
+        return -1;
+
     Eth_Device_T *eth_dev = (Eth_Device_T *)privatedata;
     Eth_Data_T *ed = (Eth_Data_T *)eth_dev->private_data;
 

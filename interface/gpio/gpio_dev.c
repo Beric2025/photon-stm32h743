@@ -265,15 +265,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     Gpio_Data_T *gpio_data = NULL;
 
-    GPIO_Pin = GPIO_Pin;
+    /* Map GPIO pin to data structure — add your board-specific mappings:
+     * if(GPIO_Pin == GPIO_PIN_0) gpio_data = &s_gpiob_pin0_data;
+     */
+    (void)GPIO_Pin;
 
-    /** eg: Handle different GPIO pins
-     * if(GPIO_Pin == GPIO_PIN_0) {
-     *     gpio_data = &s_gpiob_pin0_data;
-     * }
-    **/
     if(gpio_data) {
-        /* Set interrupt flag to active */
         gpio_data->int_flag = 1;
     }
 }

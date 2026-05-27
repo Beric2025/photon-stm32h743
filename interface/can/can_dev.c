@@ -158,7 +158,7 @@ static unsigned short can_receive(void *privatedata, unsigned char *data, unsign
 {
     if(privatedata == NULL) {
         LOG_PRINT(LOG_OUT_ERROR, "%s Receive private data is null!\n", TAG);
-        return -1;
+        return 0;
     }
 
     Can_Device_T *cav_dev = (Can_Device_T *)privatedata;

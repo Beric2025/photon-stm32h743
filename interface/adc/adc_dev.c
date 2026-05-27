@@ -149,30 +149,30 @@ static int adc_read_raw(void *privatedata, unsigned char channel, unsigned short
     if (privatedata == NULL || value == NULL) {
         LOG_PRINT(LOG_OUT_ERROR, "%s ADC read raw private data is null!\n", TAG);
         return -1;
-    }
+    }    
 
     Adc_Device_T *adev = (Adc_Device_T *)privatedata;
     Adc_Data_T *pdata = (Adc_Data_T *)adev->private_data;
-    unsigned char ch;
     unsigned short avg[ADC1_CHANNEL_NUM] = {0};
+    unsigned char i, j;
+    signed char samples;
+
 #ifdef USE_OS
     taskENTER_CRITICAL();
 #endif
     if (pdata->ring_buf_size) {
-        for (ch = 0; ch < ADC1_CHANNEL_NUM; ch++) {
-            avg[ch] += pdata->ring_buf[ch];
-        }
-        unsigned char i, j;
+        samples = pdata->ring_buf_size / ADC1_CHANNEL_NUM;
         for (j = 0; j < ADC1_CHANNEL_NUM; j++) {
-            for (i = 1; i < pdata->ring_buf_size / ADC1_CHANNEL_NUM; i++) {
+            for (i = 0; i < samples; i++) {
                 avg[j] += pdata->ring_buf[ADC1_CHANNEL_NUM * i + j];
-                avg[j] /= 2;
             }
+            avg[j] /= samples;
         }
     }
 #ifdef USE_OS
     taskEXIT_CRITICAL();
 #endif
+
     if (channel >= ADC1_CHANNEL_NUM) {
         LOG_PRINT(LOG_OUT_ERROR, "%s ADC channel %d out of range!\n", TAG, channel);
         return -1;
@@ -194,8 +194,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
     if (hadc == s_adc1_data.adc) {
         pdata = &s_adc1_data;
-
     }
+
+    if (pdata == NULL)
+        return;
 
     ADC_Disable(pdata->adc);
 

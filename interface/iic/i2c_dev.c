@@ -88,7 +88,7 @@ static int i2c_write(void *privatedata, unsigned short devaddr, unsigned short r
     if(i2c_data->mode == 0) {
         HAL_StatusTypeDef reval = HAL_OK;
 
-        unsigned char tmp[6];
+        unsigned char tmp[256];
         if((unsigned int)(length + 1) > sizeof(tmp)) {
             LOG_PRINT(LOG_OUT_ERROR, "%s: I2C write buffer too small!\n", TAG);
             return -1;

@@ -127,9 +127,9 @@ static int cap_get_pulse(void *privatedata, unsigned char channel, unsigned int 
         return -1;
     }
 
-    /* captured value is in timer ticks; convert to µs */
-    unsigned int tick_to_us = (cap_data->prescaler + 1);
-    *width_us = cap_data->captured_value[channel] * tick_to_us;
+    /* captured ticks * (psc+1) / (TIM_CLK / 1e6) = µs */
+    *width_us = (unsigned int)((unsigned long long)cap_data->captured_value[channel]
+                * (cap_data->prescaler + 1) * 1000000UL / CAP_TIMER_CLK_HZ);
 
     /* clear flag for next capture */
     cap_data->capture_done[channel] = 0;
