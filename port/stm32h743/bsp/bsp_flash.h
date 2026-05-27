@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
-#ifndef __STM_FLASH_H
-#define __STM_FLASH_H
+#ifndef __BSP_FLASH_H
+#define __BSP_FLASH_H
 
 /* FLASH base address */
 #define STM32_FLASH_SIZE 0x0200000 /* STM32 FLASH total size */
@@ -37,6 +37,17 @@
 
 
 #define BOARD_NUM_ADDR ADDR_FLASH_SECTOR_1_BANK1
+
+/* Flash partition layout (product-level config) */
+#define BOOT_SECTOR_ADDR        ADDR_FLASH_SECTOR_0_BANK1   /* 128 KB */
+#define BOOT_SECTOR_SIZE        0x20000
+#define SETTING_SECTOR_ADDR     ADDR_FLASH_SECTOR_1_BANK1   /* 128 KB */
+#define SETTING_SECTOR_SIZE     0x20000
+#define APP_SECTOR_ADDR         ADDR_FLASH_SECTOR_2_BANK1   /* 512 KB */
+#define APP_SECTOR_SIZE         0x80000
+#define DOWNLOAD_SECTOR_ADDR    ADDR_FLASH_SECTOR_0_BANK2   /* 512 KB */
+#define DOWNLOAD_SECTOR_SIZE    0x80000
+#define APP_ERASE_SECTORS       APP_SECTOR_SIZE
 
 
 /**
@@ -108,4 +119,4 @@ unsigned char stmflash_write(unsigned int writeaddr, unsigned int *buff, unsigne
 void stmflash_read(unsigned int raddr, unsigned int *buff, unsigned int length);
 
 
-#endif /*__STM_FLASH_H*/
+#endif /*__BSP_FLASH_H*/

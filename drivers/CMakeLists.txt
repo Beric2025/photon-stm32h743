@@ -11,6 +11,7 @@ target_include_directories(drivers PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/iap
     ${CMAKE_CURRENT_SOURCE_DIR}/eth_phy
     ${CMAKE_CURRENT_SOURCE_DIR}/net
+    ${CMAKE_CURRENT_SOURCE_DIR}/delay
     ${CMAKE_CURRENT_SOURCE_DIR}/pcf8574
     # TODO: cross-module references — these should come from their owning targets
     ${CMAKE_SOURCE_DIR}/app/app_core/Inc

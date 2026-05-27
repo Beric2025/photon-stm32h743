@@ -11,6 +11,7 @@
 #include "main.h"
 #include "app_manage.h"
 #include "iap.h"
+#include "bsp_flash.h"
 #include "flash_dev.h"
 #include "delay_dev.h"
 #include "log_print.h"

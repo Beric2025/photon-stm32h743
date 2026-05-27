@@ -54,7 +54,7 @@ typedef struct {
      * Return: 0 on success, -1 on failure
      */
     int (*read_raw)(void *privatedata, unsigned char channel, unsigned short *value);
-
+    
     void *private_data;
 } Adc_Device_T;
 

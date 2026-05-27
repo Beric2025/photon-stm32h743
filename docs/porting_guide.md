@@ -146,7 +146,7 @@ For each interface module your application uses:
 3. Call the registration/init function (e.g., `gpio_dev_init()`) from `main.c` or `application_init()`
 
 Example — GPIO registration flow:
-1. `interface/GPIO/gpio_dev.h` declares `Gpio_Device_T` with function pointer fields
+1. `interface/gpio/gpio_dev.h` declares `Gpio_Device_T` with function pointer fields
 2. `port/stm32h743/bsp/bsp_gpio.c` implements the hardware-specific init functions
 3. `port/stm32h743/system/gpio.c` wires BSP functions into `Gpio_Device_T` structs
 4. `port/stm32h743/system/main.c` calls `gpio_dev_init()` at startup
@@ -162,7 +162,7 @@ See `port/stm32h743/` for a complete working example using:
 ## Adding New Hardware Drivers
 
 1. Create `drivers/<device>/` directory
-2. Define device abstraction (`*_dev.h`) — reference `interface/GPIO/gpio_dev.h` for the pattern
+2. Define device abstraction (`*_dev.h`) — reference `interface/gpio/gpio_dev.h` for the pattern
 3. Implement driver (`*_dev.c`) — call hardware exclusively through `interface/` modules
 4. Register in `app/` initialization
 

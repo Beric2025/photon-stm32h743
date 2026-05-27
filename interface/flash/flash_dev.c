@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "flash_dev.h"
-#include "stm_flash.h"
+#include "bsp_flash.h"
 #include "log_print.h"
 
 #define TAG "flash dev: "

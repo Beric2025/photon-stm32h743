@@ -10,18 +10,6 @@
  extern "C" {
 #endif
 
-#include "stm_flash.h"
-
-#define BOOT_SECTOR_ADDR        ADDR_FLASH_SECTOR_0_BANK1       /* BOOT sector start address */
-#define BOOT_SECTOR_SIZE        0x20000                         /* BOOT sector size 128k */
-#define SETTING_SECTOR_ADDR     ADDR_FLASH_SECTOR_1_BANK1       /* SETTING sector start address */
-#define SETTING_SECTOR_SIZE     0x20000                         /* SETTING sector size 128k */
-#define APP_SECTOR_ADDR         ADDR_FLASH_SECTOR_2_BANK1       /* APP sector start address */
-#define APP_SECTOR_SIZE         0x80000                         /* APP sector size 512k */
-#define DOWNLOAD_SECTOR_ADDR    ADDR_FLASH_SECTOR_0_BANK2       /* download sector start address */
-#define DOWNLOAD_SECTOR_SIZE    0x80000                         /* download sector size 512k */
-#define APP_ERASE_SECTORS       APP_SECTOR_SIZE                 /* APP erase sector size */
-
 #define START_PROGRAM           0                               /* modify new program */
 #define UPDATE_PROGRAM          1                               /* update new program */
 #define UPDATE_SUCCESS          2                               /* update success */

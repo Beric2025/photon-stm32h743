@@ -7,7 +7,7 @@
 #define _DELAY_DEV_H_
 
 #ifdef __cplusplus
- 	extern "C" {
+extern "C" {
 #endif
 
 
@@ -27,4 +27,4 @@ void delay_ms(unsigned int ms);
 }
 #endif
 
-#endif	/* _DELAY_DEV_H_ */
+#endif /* _DELAY_DEV_H_ */

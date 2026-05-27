@@ -10,6 +10,7 @@
  	extern "C" {
 #endif
 
+
 typedef struct {
 	/* Flash device identifier (e.g. "flash0") */
 	char *name;
