@@ -13,6 +13,13 @@ target_include_directories(interface PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/ethernet
     ${CMAKE_CURRENT_SOURCE_DIR}/adc
     ${CMAKE_CURRENT_SOURCE_DIR}/tim
+    ${CMAKE_CURRENT_SOURCE_DIR}/wdg
+    ${CMAKE_CURRENT_SOURCE_DIR}/rtc
+    ${CMAKE_CURRENT_SOURCE_DIR}/dac
+    ${CMAKE_CURRENT_SOURCE_DIR}/i2s
+    ${CMAKE_CURRENT_SOURCE_DIR}/qspi
+    ${CMAKE_CURRENT_SOURCE_DIR}/lp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rng
     # TODO: cross-module references — these belong in the modules that own them
     ${CMAKE_SOURCE_DIR}/drivers/delay
     ${CMAKE_SOURCE_DIR}/drivers/pcf8574
