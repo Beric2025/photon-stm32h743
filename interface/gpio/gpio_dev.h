@@ -77,6 +77,20 @@ typedef struct {
 	void *private_data;
 } Gpio_Device_T;
 
+/* ====================================================================
+ * Generic GPIO events — MCU / SDK independent
+ * ==================================================================== */
+typedef enum {
+	GPIO_EVENT_EXTI,          /* External interrupt on a pin                */
+} Gpio_Event_T;
+
+/**
+ * @brief:  Notify the interface layer of a GPIO EXTI event (from BSP ISR).
+ * @gpio_pin:  The pin that triggered the interrupt (e.g. GPIO_PIN_0).
+ *             BSP passes this from HAL_GPIO_EXTI_Callback.
+ */
+void gpio_dev_on_event(uint16_t gpio_pin);
+
 /**
  * @brief:  get GPIO device structure by name
  * @name:   device name (e.g. "led0", "led1")

@@ -261,18 +261,20 @@ static int clear_gpio_pin_int(void *privatedata)
     return 0;
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+/* ====================================================================
+ * gpio_dev_on_event — entry point from BSP HAL_GPIO_EXTI_Callback
+ *
+ * Maps a GPIO pin to the registered device(s) and sets their interrupt
+ * flag.  Since HAL_GPIO_EXTI_Callback only provides the pin (not the
+ * port), board-specific logic must map the pin+port combination here.
+ * ==================================================================== */
+void gpio_dev_on_event(uint16_t gpio_pin)
 {
-    Gpio_Data_T *gpio_data = NULL;
-
-    /* Map GPIO pin to data structure — add your board-specific mappings:
-     * if(GPIO_Pin == GPIO_PIN_0) gpio_data = &s_gpiob_pin0_data;
+    /* Board-specific pin-to-device mapping — extend as needed.
+     * Example:
+     *   if (gpio_pin == GPIO_PIN_0) s_gpiob_pin0_data.int_flag = 1;
      */
-    (void)GPIO_Pin;
-
-    if(gpio_data) {
-        gpio_data->int_flag = 1;
-    }
+    (void)gpio_pin;
 }
 
 Gpio_Device_T *get_gpio_device(char *name)

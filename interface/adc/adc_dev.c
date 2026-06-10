@@ -184,12 +184,16 @@ static int adc_read_raw(void *privatedata, unsigned char channel, unsigned short
 }
 
 
-/*
- * HAL ADC conversion complete callback.
- * Copies DMA buffer into ring buffer and restarts conversion.
- */
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+/* ====================================================================
+ * adc_dev_on_event — single entry point from BSP HAL callbacks
+ *
+ * Copies DMA buffer into ring buffer and re-arms conversion.
+ * Runs in ISR context — keep it short.
+ * ==================================================================== */
+void adc_dev_on_event(void *hadc_void, Adc_Event_T event)
 {
+    (void)event;  /* currently only CONV_COMPLETE is handled */
+    ADC_HandleTypeDef *hadc = (ADC_HandleTypeDef *)hadc_void;
     Adc_Data_T *pdata = NULL;
 
     if (hadc == s_adc1_data.adc) {
@@ -199,19 +203,17 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     if (pdata == NULL)
         return;
 
-    ADC_Disable(pdata->adc);
-
 #ifdef USE_OS
-		unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
+    unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
 #endif
     if (s_adc1_data.ring_buf_size >= ADC1_RING_BUF_SIZE)
         s_adc1_data.ring_buf_size = 0;
 
     memcpy(s_adc1_data.ring_buf + s_adc1_data.ring_buf_size,
-            s_adc1_data.dma_buf, s_adc1_data.dma_buf_size * 2);
+           s_adc1_data.dma_buf, s_adc1_data.dma_buf_size * 2);
     s_adc1_data.ring_buf_size += s_adc1_data.dma_buf_size;
 #ifdef USE_OS
-		taskEXIT_CRITICAL_FROM_ISR(task_retval);
+    taskEXIT_CRITICAL_FROM_ISR(task_retval);
 #endif
 
     if (pdata->dma_on) {

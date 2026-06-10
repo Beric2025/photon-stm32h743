@@ -55,6 +55,35 @@ typedef struct {
 	void *private_data;
 }Uart_Device_T;
 
+/* ====================================================================
+ * Generic UART events — MCU / SDK independent
+ *
+ * BSP layer translates HAL-specific callbacks into these events and
+ * calls uart_dev_on_event().  The interface layer never sees HAL types
+ * directly, which keeps it portable across MCU families.
+ * ==================================================================== */
+typedef enum {
+	UART_EVENT_RX_IDLE,       /* DMA receive idle (variable-length frame)  */
+	UART_EVENT_TX_COMPLETE,   /* DMA / IT transmit complete                */
+	UART_EVENT_TX_HALF,       /* DMA transmit half-complete                */
+	UART_EVENT_ERROR,         /* Frame / noise / overflow / parity error   */
+} Uart_Event_T;
+
+/**
+ * @brief:  Notify the interface layer of a UART event (called from BSP ISR).
+ * @huart:   Opaque handle that identifies the UART peripheral (HAL's
+ *           UART_HandleTypeDef* cast to void* — interface layer casts
+ *           it back internally to locate the device).
+ * @event:   Generic event type (see Uart_Event_T).
+ * @size:    Number of bytes received (only meaningful for RX_IDLE,
+ *           pass 0 for other events).
+ *
+ * This is the single entry point from BSP HAL callbacks into the
+ * MCU-independent UART device layer.  Keep it short — it runs in ISR
+ * context.
+ */
+void uart_dev_on_event(void *huart, Uart_Event_T event, unsigned short size);
+
 /**
  * @brief:  get UART device structure by name
  * @name:   device name (e.g. "uart1", "uart2")

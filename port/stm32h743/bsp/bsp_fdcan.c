@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "bsp_fdcan.h"
+#include "can_dev.h"
 
 FDCAN_HandleTypeDef   g_fdcan1;
 FDCAN_TxHeaderTypeDef g_fdcan1_tx;
@@ -103,3 +104,22 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *hfdcan)
     HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
 #endif
 }
+
+/* ====================================================================
+ * HAL callbacks — translates to generic event for interface layer
+ * ==================================================================== */
+
+#if FDCAN1_RX0_INT_ENABLE
+
+void FDCAN1_IT0_IRQHandler(void)
+{
+    HAL_FDCAN_IRQHandler(&g_fdcan1);
+}
+
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
+{
+    (void)RxFifo0ITs;
+    can_dev_on_event((void *)hfdcan, CAN_EVENT_RX_FIFO0);
+}
+
+#endif

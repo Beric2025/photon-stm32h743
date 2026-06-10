@@ -45,6 +45,21 @@ typedef struct {
 	void *private_data;   /* hardware-specific data (e.g. Can_Device_T *) */
 }Can_Device_T;
 
+/* ====================================================================
+ * Generic CAN events — MCU / SDK independent
+ * ==================================================================== */
+typedef enum {
+	CAN_EVENT_RX_FIFO0,       /* Message pending in RX FIFO0                */
+	CAN_EVENT_RX_FIFO1        /* Message pending in RX FIFO1                */
+} Can_Event_T;
+
+/**
+ * @brief:  Notify the interface layer of a CAN event (from BSP ISR).
+ * @hcan:    Opaque handle (FDCAN_HandleTypeDef* cast to void*).
+ * @event:   Generic event type.
+ */
+void can_dev_on_event(void *hcan, Can_Event_T event);
+
 /**
  * @brief:  get CAN device structure by name
  * @name:   device name (e.g. "fdcan1")

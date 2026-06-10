@@ -6,6 +6,7 @@
  */
 
 #include "bsp_gpio.h"
+#include "gpio_dev.h"
 
 void bsp_gpioa_pin0_init(void)
 {
@@ -133,3 +134,10 @@ void bsp_gpioi_pin1_init(void)
 
 }
 
+/* ====================================================================
+ * HAL callback — translates to generic event for interface layer
+ * ==================================================================== */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    gpio_dev_on_event(GPIO_Pin);
+}

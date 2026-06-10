@@ -6,6 +6,7 @@
  */
 
 #include "bsp_adc.h"
+#include "adc_dev.h"
 
 
 ADC_HandleTypeDef g_adc1;
@@ -147,4 +148,12 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
         /* ADC1 DMA deinitialization */
         HAL_DMA_DeInit(adcHandle->DMA_Handle);
     }
+}
+
+/* ====================================================================
+ * HAL callback — translates to generic event for interface layer
+ * ==================================================================== */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+    adc_dev_on_event((void *)hadc, ADC_EVENT_CONV_COMPLETE);
 }

@@ -58,6 +58,20 @@ typedef struct {
     void *private_data;
 } Adc_Device_T;
 
+/* ====================================================================
+ * Generic ADC events — MCU / SDK independent
+ * ==================================================================== */
+typedef enum {
+	ADC_EVENT_CONV_COMPLETE,  /* DMA conversion complete — ring buffer ready */
+} Adc_Event_T;
+
+/**
+ * @brief:  Notify the interface layer of an ADC event (called from BSP ISR).
+ * @hadc:    Opaque handle (ADC_HandleTypeDef* cast to void*).
+ * @event:   Generic event type.
+ */
+void adc_dev_on_event(void *hadc, Adc_Event_T event);
+
 /**
  * @brief:  get ADC device structure by name
  * @name:   device name (e.g. "adc1")

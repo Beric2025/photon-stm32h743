@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "bsp_uart.h"
+#include "uart_dev.h"
 
 /* UART handle definition */
 UART_HandleTypeDef g_uart1;
@@ -315,5 +316,30 @@ void UART7_IRQHandler(void)
   HAL_UART_IRQHandler(&g_uart7);
 }
 
+/* ====================================================================
+ * HAL callback implementations — the *only* place in the project that
+ * touches STM32 HAL weak callbacks.  Each one simply translates the
+ * HAL-specific event into a generic Uart_Event_T and forwards it to
+ * the MCU-independent interface layer via uart_dev_on_event().
+ * ==================================================================== */
 
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    uart_dev_on_event((void *)huart, UART_EVENT_ERROR, 0);
+}
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    uart_dev_on_event((void *)huart, UART_EVENT_RX_IDLE, Size);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    uart_dev_on_event((void *)huart, UART_EVENT_TX_COMPLETE, 0);
+}
+
+void HAL_UART_TxHalfCpltCallback(UART_HandleTypeDef *huart)
+{
+    uart_dev_on_event((void *)huart, UART_EVENT_TX_HALF, 0);
+}
 

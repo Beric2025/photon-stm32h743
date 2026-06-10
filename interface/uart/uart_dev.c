@@ -206,91 +206,89 @@ static int uart_ioctl(void *privatedata, unsigned int flag)
 	return 0;
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+/* ====================================================================
+ * uart_dev_on_event — single entry point from BSP HAL callbacks
+ *
+ * BSP layer calls this with a void* handle (the HAL UART_HandleTypeDef
+ * cast to void*).  We cast it back internally to locate the device and
+ * dispatch to the correct event handler.
+ *
+ * Runs in ISR context — keep it short and non-blocking.
+ * ==================================================================== */
+void uart_dev_on_event(void *huart_void, Uart_Event_T event, unsigned short size)
 {
+	UART_HandleTypeDef *huart = (UART_HandleTypeDef *)huart_void;
 	Uart_Data_T *uart_data = NULL;
 
-	if(huart == s_uart1_data.uart) {
+	/* Locate the device by matching the HAL handle */
+	if (huart == s_uart1_data.uart) {
 		uart_data = &s_uart1_data;
-	}
-	if(huart == s_uart4_data.uart) {
+	} else if (huart == s_uart4_data.uart) {
 		uart_data = &s_uart4_data;
-	}
-	if(huart == s_uart7_data.uart) {
+	} else if (huart == s_uart7_data.uart) {
 		uart_data = &s_uart7_data;
+	} else {
+		return;   /* unknown UART — not registered with this layer */
 	}
 
-	if(uart_data && uart_data->dma_on) {
-		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
-	}
-}
-#if 0
+	switch (event) {
 
-void HAL_UART_TxHalfCpltCallback(UART_HandleTypeDef *huart)
-{
-	Uart_Data_T *uart_data = NULL;
+		case UART_EVENT_RX_IDLE:
+		{
+	#ifdef USE_OS
+			unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
+	#endif
+			/* Buffer overflow guard — restart from 0 if frame exceeds buffer */
+			if ((uart_data->rx_length + size) > uart_data->dma_buffer_size)
+				uart_data->rx_length = 0;
 
-	if(huart == s_uart1_data.huart) {
-		uart_data = &s_uart1_data;
-	}
+			if (uart_data->dma_on) {
+				/* Invalidate cache before copying to ensure latest data */
+				SCB_InvalidateDCache_by_Addr((unsigned int*)uart_data->dma_buffer, UART_DMA_ALIGN_SIZE(size));
+			}
 
-	if(uart_data->dma_on) {
-		HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
-	}
-}
+			memcpy(uart_data->rx_buffer + uart_data->rx_length,
+				uart_data->dma_buffer, size);
+			uart_data->rx_length += size;
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-	Uart_Data_T *uart_data = NULL;
-
-	if(huart == s_uart1_data.huart) {
-		uart_data = &s_uart1_data;
-	}
-
-	if(uart_data) {
-#ifdef USE_OS
-		unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
-#endif
-		uart_data->tx_flag = 1;
-#ifdef USE_OS
-		taskEXIT_CRITICAL_FROM_ISR(task_retval);
-#endif
-
-	}
-}
-#endif
-
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
-{
-	Uart_Data_T *uart_data = NULL;
-
-	if(huart == s_uart7_data.uart) {
-		uart_data = &s_uart7_data;
-	}
-
-	if(uart_data) {
-#ifdef USE_OS
-		unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
-#endif
-		/* Buffer overflow, restart from 0 */
-		if((uart_data->rx_length + Size) > uart_data->dma_buffer_size)
-			uart_data->rx_length = 0;
-
-		if(uart_data->dma_on) {
-			/* Invalidate cache before copying to ensure latest data */
-			SCB_InvalidateDCache_by_Addr((unsigned int*)uart_data->dma_buffer, UART_DMA_ALIGN_SIZE(Size));
+			memset(uart_data->dma_buffer, 0, uart_data->dma_buffer_size);
+	#ifdef USE_OS
+			taskEXIT_CRITICAL_FROM_ISR(task_retval);
+	#endif
+			/* Re-arm DMA reception for the next frame */
+			if (uart_data->dma_on) {
+				HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart,
+					uart_data->dma_buffer, uart_data->dma_buffer_size);
+			}
+			break;
 		}
 
-		memcpy(uart_data->rx_buffer + uart_data->rx_length, uart_data->dma_buffer, Size);
-		uart_data->rx_length += Size;
-
-		memset(uart_data->dma_buffer, 0, uart_data->dma_buffer_size);
-#ifdef USE_OS
-		taskEXIT_CRITICAL_FROM_ISR(task_retval);
-#endif
-		if(uart_data->dma_on) {
-			HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart, uart_data->dma_buffer, uart_data->dma_buffer_size);
+		case UART_EVENT_TX_COMPLETE:
+	#ifdef USE_OS
+		{
+			unsigned int task_retval = taskENTER_CRITICAL_FROM_ISR();
+			uart_data->tx_flag = 1;
+			taskEXIT_CRITICAL_FROM_ISR(task_retval);
 		}
+	#else
+			uart_data->tx_flag = 1;
+	#endif
+			break;
+
+		case UART_EVENT_TX_HALF:
+			/* Reserved for future use (e.g. double-buffered TX) */
+			break;
+
+		case UART_EVENT_ERROR:
+			/* On error, re-arm DMA so reception doesn't stall permanently */
+			if (uart_data->dma_on) {
+				HAL_UARTEx_ReceiveToIdle_DMA(uart_data->uart,
+					uart_data->dma_buffer, uart_data->dma_buffer_size);
+			}
+			break;
+
+		default:
+			break;
 	}
 }
 

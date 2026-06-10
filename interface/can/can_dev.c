@@ -193,37 +193,50 @@ Can_Device_T *get_can_device(char *name)
 }
 
 
+/* ====================================================================
+ * can_dev_on_event — single entry point from BSP HAL callbacks
+ *
+ * Handles RX FIFO buffer operations in interrupt mode.
+ * Runs in ISR context — keep it short.
+ * ==================================================================== */
 #if FDCAN1_RX0_INT_ENABLE
-void FDCAN1_IT0_IRQHandler(void)
+void can_dev_on_event(void *hcan_void, Can_Event_T event)
 {
-    /* HAL_FDCAN_IRQHandler(&g_fdcan1); */
-}
-
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-    /* uint8_t i = 0; */
-    uint8_t rxdata[8];
+    FDCAN_HandleTypeDef *hfdcan = (FDCAN_HandleTypeDef *)hcan_void;
     Can_Data_T *cav_data = NULL;
-    uint16_t size = 0;
 
-    if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
+    if (hfdcan == s_fdcan1_data.fdcan) {
         cav_data = &s_fdcan1_data;
+    }
+
+    if (cav_data == NULL)
+        return;
+
+    switch (event) {
+    case CAN_EVENT_RX_FIFO0:
+    {
+        uint8_t rxdata[8];
+        uint16_t size = 0;
+
         HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, cav_data->fdcan_rx, rxdata);
-        size = cav_data->fdcan_rx->DataLength>>16;
+        size = cav_data->fdcan_rx->DataLength >> 16;
 #ifdef USE_OS
-		uint32_t task_retval = taskENTER_CRITICAL_FROM_ISR();
+        uint32_t task_retval = taskENTER_CRITICAL_FROM_ISR();
 #endif
-        if((cav_data->rx_size + size) > FDCAN1_RX_BUF_SIZE) {
+        if ((cav_data->rx_size + size) > FDCAN1_RX_BUF_SIZE) {
             cav_data->rx_size = 0;
         }
         memcpy(&cav_data->rx_buf[cav_data->rx_size], rxdata, size);
         cav_data->rx_size += size;
 #ifdef USE_OS
-		taskEXIT_CRITICAL_FROM_ISR(task_retval);
+        taskEXIT_CRITICAL_FROM_ISR(task_retval);
 #endif
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+        break;
+    }
+    default:
+        break;
     }
 }
-
 #endif
 
